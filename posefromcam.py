@@ -7,7 +7,7 @@ from pyautogui import hotkey
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
-initial_height = [0, 0]
+initial_height = [0, 0, 0]
 initialised = False
 currentState = 'front'
 width = 0
@@ -66,9 +66,9 @@ def isTilting(landmarks):
     right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value] 
     left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP.value] 
     right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value] 
-    mean_shoulder = [(left_shoulder.x + right_shoulder.x) * width / 2 , (left_shoulder.y + right_shoulder.y) * height / 2]
-    mean_hip = [(left_hip.x + right_hip.x) * width / 2 , (left_hip.y + right_hip.y) * height / 2]
-    vertical = [mean_hip[0], mean_hip[1] - 5]
+    mean_shoulder = [(left_shoulder.x + right_shoulder.x) * width / 2 , (left_shoulder.y + right_shoulder.y) * height / 2, (left_shoulder.z + right_shoulder.z) * height / 2]
+    mean_hip = [(left_hip.x + right_hip.x) * width / 2 , (left_hip.y + right_hip.y) * height / 2, (left_hip.z + right_hip.z) * height / 2]
+    vertical = [mean_hip[0], mean_hip[1] - 5, mean_hip[2]]
 
     a = np.array(mean_shoulder)
     b = np.array(mean_hip)
@@ -150,7 +150,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             if (not initialised):
                 left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value] 
                 right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value] 
-                initial_height = [(left_shoulder.x + right_shoulder.x) / 2 , (left_shoulder.y + right_shoulder.y) / 2]
+                initial_height = [(left_shoulder.x + right_shoulder.x) / 2 , (left_shoulder.y + right_shoulder.y) / 2, (left_shoulder.z + right_shoulder.z) / 2]
                 initialised = True
 
             prediction = getPrediction(landmarks)
