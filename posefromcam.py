@@ -83,7 +83,7 @@ def isTilting(landmarks):
 
     print(angle)
 
-    if (angle < 5):
+    if (angle < 15):
         return False
 
     if (currentState == 'front'):
@@ -193,6 +193,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
             tilt = isTilting(landmarks)
             if (tilt):
+                if (tilt == 'Tilt right'):
+                    hotkey('right')
+                else:
+                    hotkey('left')
                 print(tilt)
         except:
             pass
