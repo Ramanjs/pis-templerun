@@ -36,7 +36,7 @@ def isRight(landmarks):
 def isLeft(landmarks):
     left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value] 
     right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value] 
-    if (abs(left_shoulder.x - right_shoulder.x) <= 0.15 and
+    if (abs(left_shoulder.x - right_shoulder.x) <= 0.11 and
         (getWeightedFaceMean(landmarks) > getWeightedShoulderMean(landmarks))):
         return True
     return False
@@ -83,7 +83,7 @@ def isTilting(landmarks):
 
     print(angle)
 
-    if (angle < 15):
+    if (angle < 10):
         return False
 
     if (currentState == 'front'):
@@ -112,7 +112,7 @@ def isCrouching(landmarks):
     right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value] 
     mean_height = [(left_shoulder.x + right_shoulder.x) / 2 , (left_shoulder.y + right_shoulder.y) / 2]
     distance = (((mean_height[0] - initial_height[0]) * width)**2 + ((mean_height[1] - initial_height[1]) * height)**2)**(0.5)
-    if (mean_height[1] > initial_height[1] and distance > height / 8):
+    if (mean_height[1] > initial_height[1] and distance > 50):
         return True
     return False
 
