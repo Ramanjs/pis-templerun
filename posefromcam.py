@@ -7,6 +7,13 @@ from pyautogui import hotkey
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
+initial_height = [0, 0]
+initialised = False
+currentState = 'front'
+width = 0
+height = 0
+cap = cv2.VideoCapture(0)
+
 def getWeightedFaceMean(landmarks):
     total = 0.0
     for i in range(11):
@@ -54,6 +61,61 @@ def isBack(landmarks):
         return True
     return False
 
+def isTilting(landmarks):
+    left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value] 
+    right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value] 
+    left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP.value] 
+    right_hip = landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value] 
+    mean_shoulder = [(left_shoulder.x + right_shoulder.x) * width / 2 , (left_shoulder.y + right_shoulder.y) * height / 2]
+    mean_hip = [(left_hip.x + right_hip.x) * width / 2 , (left_hip.y + right_hip.y) * height / 2]
+    vertical = [mean_hip[0], mean_hip[1] - 5]
+
+    a = np.array(mean_shoulder)
+    b = np.array(mean_hip)
+    c = np.array(vertical)
+
+    ba = a - b
+    bc = c - b
+
+    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    angle = np.arccos(cosine_angle)
+    angle = np.degrees(angle)
+
+    print(angle)
+
+    if (angle < 10):
+        return False
+
+    if (currentState == 'front'):
+        if (mean_shoulder[0] < mean_hip[0]):
+            return 'Tilt right'
+        else:
+            return 'Tilt left'
+    elif (currentState == 'back'):
+        if (mean_shoulder[0] < mean_hip[0]):
+            return 'Tilt left'
+        else:
+            return 'Tilt right'
+    elif (currentState == 'left'):
+        if (mean_shoulder[2] < mean_hip[2]):
+            return 'Tilt right'
+        else:
+            return 'Tilt left'
+    elif (currentState == 'right'):
+        if (mean_shoulder[2] < mean_hip[2]):
+            return 'Tilt left'
+        else:
+            return 'Tilt right'
+
+def isCrouching(landmarks):
+    left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value] 
+    right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value] 
+    mean_height = [(left_shoulder.x + right_shoulder.x) / 2 , (left_shoulder.y + right_shoulder.y) / 2]
+    distance = (((mean_height[0] - initial_height[0]) * width)**2 + ((mean_height[1] - initial_height[1]) * height)**2)**(0.5)
+    if (mean_height[1] < initial_height[1] and distance >= 0.2):
+        return True
+    return False
+
 def getPrediction(landmarks):
     if (isRight(landmarks)):
         return 'right'
@@ -64,13 +126,11 @@ def getPrediction(landmarks):
     if (isBack(landmarks)):
         return 'back'
 
-cap = cv2.VideoCapture(0)
-currentState = 'front'
-
 ## Setup mediapipe instance
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
     while cap.isOpened():
         ret, frame = cap.read()
+        width, height = frame.shape[:2]
         
         # Recolor image to RGB
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -86,8 +146,15 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         prediction = ''
         try:
             landmarks = results.pose_landmarks.landmark
+
+            if (not initialised):
+                left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value] 
+                right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value] 
+                initial_height = [(left_shoulder.x + right_shoulder.x) / 2 , (left_shoulder.y + right_shoulder.y) / 2]
+                initialised = True
+
             prediction = getPrediction(landmarks)
-            print(prediction)
+            # print(prediction)
             if (currentState == 'front'):
                 if (prediction == 'left'):
                     hotkey('ctrl', 'shift', 'left')
@@ -109,6 +176,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 elif (prediction == 'back'):
                     hotkey('ctrl', 'shift', 'right')
             currentState = prediction
+
+
+            if (isCrouching(landmarks)):
+                hotkey('down')
         except:
             pass
 
