@@ -87,27 +87,39 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         try:
             landmarks = results.pose_landmarks.landmark
             prediction = getPrediction(landmarks)
-            print(prediction)
+            if prediction==None:
+                prediction = currentState
+            print(currentState,prediction)      
             if (currentState == 'front'):
                 if (prediction == 'left'):
-                    hotkey('ctrl', 'shift', 'left')
+                    hotkey('left')
+                    hotkey('win', 'shift', 'left')
+                    # print('left')
+                    # break
                 elif (prediction == 'right'):
-                    hotkey('ctrl', 'shift', 'right')
+                    hotkey('right')
+                    hotkey('win', 'shift', 'right')
             elif (currentState == 'left'):
                 if (prediction == 'back'):
-                    hotkey('ctrl', 'shift', 'left')
+                    hotkey('left')
+                    hotkey('win', 'shift', 'left')
                 elif (prediction == 'front'):
-                    hotkey('ctrl', 'shift', 'right')
+                    hotkey('right')
+                    hotkey('win', 'shift', 'right')
             elif (currentState == 'back'):
                 if (prediction == 'left'):
-                    hotkey('ctrl', 'shift', 'right')
+                    hotkey('right')
+                    hotkey('win', 'shift', 'right')
                 elif (prediction == 'right'):
-                    hotkey('ctrl', 'shift', 'left')
+                    hotkey('left')
+                    hotkey('win', 'shift', 'left')
             elif (currentState == 'right'):
                 if (prediction == 'front'):
-                    hotkey('ctrl', 'shift', 'left')
+                    hotkey('left')
+                    hotkey('win', 'shift', 'left')
                 elif (prediction == 'back'):
-                    hotkey('ctrl', 'shift', 'right')
+                    hotkey('right')
+                    hotkey('win', 'shift', 'right')
             currentState = prediction
         except:
             pass
