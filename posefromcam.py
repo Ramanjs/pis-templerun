@@ -3,6 +3,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import math
+from pyautogui import hotkey
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
@@ -64,6 +65,8 @@ def getPrediction(landmarks):
         return 'back'
 
 cap = cv2.VideoCapture(0)
+currentState = 'front'
+
 ## Setup mediapipe instance
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
     while cap.isOpened():
@@ -85,6 +88,27 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             landmarks = results.pose_landmarks.landmark
             prediction = getPrediction(landmarks)
             print(prediction)
+            if (currentState == 'front'):
+                if (prediction == 'left'):
+                    hotkey('ctrl', 'shift', 'left')
+                elif (prediction == 'right'):
+                    hotkey('ctrl', 'shift', 'right')
+            elif (currentState == 'left'):
+                if (prediction == 'back'):
+                    hotkey('ctrl', 'shift', 'left')
+                elif (prediction == 'front'):
+                    hotkey('ctrl', 'shift', 'right')
+            elif (currentState == 'back'):
+                if (prediction == 'left'):
+                    hotkey('ctrl', 'shift', 'right')
+                elif (prediction == 'right'):
+                    hotkey('ctrl', 'shift', 'left')
+            elif (currentState == 'right'):
+                if (prediction == 'front'):
+                    hotkey('ctrl', 'shift', 'left')
+                elif (prediction == 'back'):
+                    hotkey('ctrl', 'shift', 'right')
+            currentState = prediction
         except:
             pass
 
